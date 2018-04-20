@@ -7,7 +7,7 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
-	<name>irc</name>
+	<name>apache-bean-loader</name>
 	<url>http://maven.apache.org</url>
 
 
@@ -28,12 +28,12 @@
 	</properties>
 
 	<dependencies>
-	<!-- 
-    <dependency>
+	    <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-language</artifactId>
       <version>${cloud.language.version}</version>
-    </dependency> -->
+    </dependency>
+    
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
@@ -50,48 +50,24 @@
 			<artifactId>beam-sdks-java-core</artifactId>
 			<version>${beam.version}</version>
 		</dependency>
-				
-		<dependency>
-			<groupId>org.apache.beam</groupId>
-			<artifactId>beam-runners-google-cloud-dataflow-java</artifactId>
-			<version>${beam.version}</version>
-		</dependency>
+
 		<dependency>
 			<groupId>org.apache.beam</groupId>
 			<artifactId>beam-runners-direct-java</artifactId>
 			<version>${beam.version}</version>
 		</dependency>
- 
-		<!--
 		<dependency>
-			<groupId>io.grpc</groupId>
-			<artifactId>grpc-all</artifactId>
-			<version>${grpc.version}</version>
+			<groupId>org.apache.beam</groupId>
+			<artifactId>beam-runners-google-cloud-dataflow-java</artifactId>
+			<version>${beam.version}</version>
+			
 			<exclusions>
 				<exclusion>
-					<groupId>com.google.protobuf</groupId>
-					<artifactId>protobuf-lite</artifactId>
+					<groupId>io.grpc</groupId>
+					<artifactId>grpc-core</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
-		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava</artifactId>
-			<version>${guava.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.hamcrest</groupId>
-			<artifactId>hamcrest-core</artifactId>
-			<version>${hamcrest.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.hamcrest</groupId>
-			<artifactId>hamcrest-library</artifactId>
-			<version>${hamcrest.version}</version>
-			<scope>test</scope>
-		</dependency>		-->
 		<dependency>
 			<groupId>org.apache.beam</groupId>
 			<artifactId>beam-sdks-java-extensions-json-jackson</artifactId>
@@ -107,10 +83,12 @@
 			<artifactId>slf4j-log4j12</artifactId>
 			<version>${slf4j.version}</version>
 		</dependency>
-	</dependencies>
+		
 
+	</dependencies>
 	<build>
 		<plugins>
+		
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -148,6 +126,16 @@
 					</execution>
 				</executions>
 			</plugin>
+			
+				      <plugin>
+	        <groupId>org.apache.maven.plugins</groupId>
+	        <artifactId>maven-enforcer-plugin</artifactId>
+	        <version>1.4.1</version>
+	        <configuration>
+	        	<rules><dependencyConvergence/></rules>
+	        </configuration>
+</plugin>
+
 		</plugins>
 	</build>
 

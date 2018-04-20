@@ -1,6 +1,5 @@
 package com.sample.cloud.loader.bean;
 
-import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 
 import org.apache.beam.sdk.coders.AvroCoder;

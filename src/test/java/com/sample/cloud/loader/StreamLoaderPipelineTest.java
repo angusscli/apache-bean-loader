@@ -1,33 +1,32 @@
 package com.sample.cloud.loader;
 
 
-import org.apache.beam.runners.dataflow.options.DataflowPipelineOptions;
+import java.io.IOException;
+import java.util.Map;
+
 import org.apache.beam.sdk.Pipeline;
-import org.apache.beam.sdk.coders.AvroCoder;
-import org.apache.beam.sdk.extensions.jackson.ParseJsons;
-import org.apache.beam.sdk.io.gcp.pubsub.PubsubIO;
-import org.apache.beam.sdk.options.Default;
-import org.apache.beam.sdk.options.ValueProvider;
-import org.apache.beam.sdk.testing.TestPipeline;
 import org.apache.beam.sdk.transforms.DoFn;
-import org.apache.beam.sdk.transforms.Mean;
-import org.apache.beam.sdk.transforms.ParDo;
-import org.apache.beam.sdk.transforms.windowing.SlidingWindows;
-import org.apache.beam.sdk.transforms.windowing.Window;
-import org.joda.time.Duration;
-import org.junit.Before;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sample.cloud.loader.bean.News;
+import com.google.cloud.language.v1.AnalyzeEntitiesRequest;
+import com.google.cloud.language.v1.AnalyzeEntitiesResponse;
+import com.google.cloud.language.v1.Document;
+import com.google.cloud.language.v1.Document.Type;
+import com.google.cloud.language.v1.EncodingType;
+import com.google.cloud.language.v1.Entity;
+import com.google.cloud.language.v1.EntityMention;
+import com.google.cloud.language.v1.LanguageServiceClient;
 
 @RunWith(JUnit4.class)
 public class StreamLoaderPipelineTest {
 	private static final Logger log = LoggerFactory.getLogger(StreamLoaderPipelineTest.class);
 	private Pipeline p;
 
+	/*
 	public static interface StreamOptions extends DataflowPipelineOptions {
 		@Default.String("5")
 		ValueProvider<String> getWindowsTime();
@@ -40,7 +39,7 @@ public class StreamLoaderPipelineTest {
 		options.setTempLocation("gs://va-test/staging");
 		p = Pipeline.create(options);
 	}
-	
+	*/
     
     public static class Print extends DoFn<Double, Double> {
     		private static final Logger log = LoggerFactory.getLogger(Print.class);
@@ -53,6 +52,7 @@ public class StreamLoaderPipelineTest {
     } 
 
 	//@Test
+    /*
 	public void test() {
 		log.info("start");
 		p.apply("ReadPubSub", PubsubIO.readStrings().fromSubscription(StreamLoaderPipeline.SUBSCRIPTIONS))
@@ -64,14 +64,15 @@ public class StreamLoaderPipelineTest {
 		;
 
 		p.run();
-	}
-	/*
+	}*/
+
+	
 	@Test
 	public void test2() throws IOException, Exception {
 		// Instantiate the Language client com.google.cloud.language.v1.LanguageServiceClient
 		try (LanguageServiceClient language = LanguageServiceClient.create()) {
 		  Document doc = Document.newBuilder()
-		      .setContent("hello world")
+		      .setContent("Investors are ignoring one of the biggest risks to the market, strategist says")
 		      .setType(Type.PLAIN_TEXT)
 		      .build();
 		  AnalyzeEntitiesRequest request = AnalyzeEntitiesRequest.newBuilder()
@@ -83,7 +84,7 @@ public class StreamLoaderPipelineTest {
 
 		  // Print the response
 		  for (Entity entity : response.getEntitiesList()) {
-		    System.out.printf("Entity: %s", entity.getName());
+		    System.out.printf("Entity: %s\n", entity.getName());
 		    System.out.printf("Salience: %.3f\n", entity.getSalience());
 		    System.out.println("Metadata: ");
 		    for (Map.Entry<String, String> entry : entity.getMetadataMap().entrySet()) {
@@ -96,6 +97,5 @@ public class StreamLoaderPipelineTest {
 		    }
 		  }
 		}
-	}*/
-
+	}
 }
