@@ -16,6 +16,7 @@ public class News {
 	private String description;
 	private String date;
 	private String id;
+	private String type;
 	private float score;
 	private float magnitude;
 	
@@ -56,9 +57,16 @@ public class News {
 		this.id = id;
 	}
 	
-	   public String toString() {
+	   public String getType() {
+		return type;
+	}
+	public void setType(String type) {
+		this.type = type;
+	}
+	public String toString() {
 		     return new ToStringBuilder(this).
 		    		 append("id", id).
+		    		 append("type",type).
 		       append("title", title).
 		       append("description", description).
 		       append("date", date).

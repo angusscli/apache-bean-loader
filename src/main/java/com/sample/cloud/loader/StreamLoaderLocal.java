@@ -48,13 +48,11 @@ public class StreamLoaderLocal
 	    public void processElement(ProcessContext c) throws Exception {
 	        News e = c.element();
 	        String message;
-	        
 			  if (e.getDescription()!=null && !"".equals(e.getDescription())) {
 				  message = e.getTitle() + " " + e.getDescription();
 			  } else {
 				  message = e.getTitle();
 			  }
-
 			try (LanguageServiceClient language = LanguageServiceClient.create()) {
 			  Document doc = Document.newBuilder()
 			      .setContent(message.toLowerCase())
@@ -68,12 +66,14 @@ public class StreamLoaderLocal
 			  AnalyzeEntitiesResponse response = language.analyzeEntities(request);
 
 			  // Print the response
+
 			  for (Entity entity : response.getEntitiesList()) {
-				  if (entity.getSalience()>0.2) {
+				  if (entity.getSalience()>0.4) {
 					  c.output(entity.getName());
 				  }
 			  }
 	    }
+	        
 	}}
 	
 	public static class WordCloudTransform extends DoFn<KV<String, Long>, String> {
@@ -107,12 +107,12 @@ public class StreamLoaderLocal
 		  
 		  Sentiment sentiment = language.analyzeSentiment(lang).getDocumentSentiment();
 
+		  /*
 		  e.setScore(sentiment.getScore());
 		  e.setMagnitude(sentiment.getMagnitude());
-		  
-		  //log.info(e.getTitle());
-  		
-	      c.output(new Double(e.getScore()));
+		  */
+
+	      c.output(new Double(sentiment.getScore()));
 	    }
     }
 
@@ -142,16 +142,18 @@ public class StreamLoaderLocal
 	    		.apply("ParseMsg", ParseJsons.of(News.class)).setCoder(AvroCoder.of(News.class))
 		;
 	
+	    
 	    pNews.apply("Convert",ParDo.of(new Convert()))
 	    		.apply("Mean",NewsAggr.<Double>globally().withoutDefaults())
 	    		//.apply(ParDo.of(new Print()))
 	    		.apply(PubsubIO.writeStrings().to(TO_TOPIC))
 	    	;
 
+
 	    pNews.apply("ConvertEntities",ParDo.of(new ConvertEntities()))
 	    		.apply(Count.perElement())
 	    		.apply(ParDo.of(new WordCloudTransform()))
-	    		.apply(PubsubIO.writeStrings().to(TO_TOPIC2))
+	    		.apply("WriteSubPubTopic",PubsubIO.writeStrings().to(TO_TOPIC2))
 	    		;
 	    p.run();
 		
