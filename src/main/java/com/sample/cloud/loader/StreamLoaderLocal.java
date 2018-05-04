@@ -39,6 +39,7 @@ public class StreamLoaderLocal
 	public static final String FROM_SUBSCRIPTIONS = "projects/traded-risk-project-1/subscriptions/news-subscription";
 	public static final String TO_TOPIC = "projects/traded-risk-project-1/topics/db-topic";
 	public static final String TO_TOPIC2 = "projects/traded-risk-project-1/topics/db2-topic";
+	public static final String TO_TOPIC3 = "projects/traded-risk-project-1/topics/db3-topic";
 	
 
 	public static class ConvertEntities extends DoFn<News,String> {
@@ -107,12 +108,36 @@ public class StreamLoaderLocal
 		  
 		  Sentiment sentiment = language.analyzeSentiment(lang).getDocumentSentiment();
 
-		  /*
-		  e.setScore(sentiment.getScore());
-		  e.setMagnitude(sentiment.getMagnitude());
-		  */
 
 	      c.output(new Double(sentiment.getScore()));
+	    }
+    }
+    
+
+    public static class Analysis extends DoFn<News, String> {
+    		private static final Logger log = LoggerFactory.getLogger(Convert.class);
+	    @ProcessElement
+	    public void processElement(ProcessContext c) throws IOException {
+	      News e = c.element();
+
+		  LanguageServiceClient language = LanguageServiceClient.create();
+
+		  String message;
+		  if (e.getDescription()!=null && !"".equals(e.getDescription())) {
+			  message = e.getTitle() + " " + e.getDescription();
+		  } else {
+			  message = e.getTitle();
+		  }
+		  
+		  Document lang = Document.newBuilder().setContent(message).setType(Type.PLAIN_TEXT).build();
+		  
+		  Sentiment sentiment = language.analyzeSentiment(lang).getDocumentSentiment();
+
+	  		if (sentiment.getScore()!=0) {
+	  			String output = "{\"date\":\""+e.getDate()+"\",\"score\":\""+sentiment.getScore()+"\",\"magnitude\":\""+sentiment.getMagnitude()+"\"}";
+		    		log.info(output);
+		    		c.output(output);
+	  		}
 	    }
     }
 
@@ -141,16 +166,17 @@ public class StreamLoaderLocal
 	            .accumulatingFiredPanes())
 	    		.apply("ParseMsg", ParseJsons.of(News.class)).setCoder(AvroCoder.of(News.class))
 		;
-	
+	    pNews.apply("NewsAnalysis",ParDo.of(new Analysis()))
+	    		.apply("WriteNewSubPub",PubsubIO.writeStrings().to(TO_TOPIC3))
+	    ;
 	    
-	    pNews.apply("Convert",ParDo.of(new Convert()))
+	    pNews.apply("NewsAggregate",ParDo.of(new Convert()))
 	    		.apply("Mean",NewsAggr.<Double>globally().withoutDefaults())
 	    		//.apply(ParDo.of(new Print()))
 	    		.apply(PubsubIO.writeStrings().to(TO_TOPIC))
 	    	;
 
-
-	    pNews.apply("ConvertEntities",ParDo.of(new ConvertEntities()))
+	    pNews.apply("EntitiesAnalysis",ParDo.of(new ConvertEntities()))
 	    		.apply(Count.perElement())
 	    		.apply(ParDo.of(new WordCloudTransform()))
 	    		.apply("WriteSubPubTopic",PubsubIO.writeStrings().to(TO_TOPIC2))

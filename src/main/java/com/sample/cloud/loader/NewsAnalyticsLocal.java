@@ -66,9 +66,9 @@ public class NewsAnalyticsLocal {
 		options.setStreaming(true);
 
 		Pipeline p = Pipeline.create(options);
-		String date = "20180423";
+		String date = "20180503";
 
-		p.apply(TextIO.read().from(options.getInputFile() + date + "*news*"))
+		p.apply(TextIO.read().from(options.getInputFile()+date+"/" + date + "*news*"))
 				.apply("ParseMsg", ParseJsons.of(News.class))
 				.setCoder(AvroCoder.of(News.class))
 				.apply(ParDo.of(new Analysis()))
