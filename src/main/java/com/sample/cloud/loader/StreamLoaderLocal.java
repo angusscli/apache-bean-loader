@@ -89,6 +89,7 @@ public class StreamLoaderLocal
 	    }
 	}
 
+	/*
     public static class Convert extends DoFn<News, Double> {
     		private static final Logger log = LoggerFactory.getLogger(Convert.class);
 	    @ProcessElement
@@ -112,9 +113,18 @@ public class StreamLoaderLocal
 	      c.output(new Double(sentiment.getScore()));
 	    }
     }
-    
+    */
+	
+    public static class ParseStats extends DoFn<News, Double> {
+		private static final Logger log = LoggerFactory.getLogger(ParseStats.class);
+		    @ProcessElement
+		    public void processElement(ProcessContext c) throws IOException {
+		      News e = c.element();
+		      c.output(new Double(e.getScore()));
+		    }
+	}
 
-    public static class Analysis extends DoFn<News, String> {
+    public static class Convert extends DoFn<News, News> {
     		private static final Logger log = LoggerFactory.getLogger(Convert.class);
 	    @ProcessElement
 	    public void processElement(ProcessContext c) throws IOException {
@@ -132,9 +142,27 @@ public class StreamLoaderLocal
 		  Document lang = Document.newBuilder().setContent(message).setType(Type.PLAIN_TEXT).build();
 		  
 		  Sentiment sentiment = language.analyzeSentiment(lang).getDocumentSentiment();
+		  
+		  News news = new News();
+		  news.setDate(e.getDate());
+		  news.setDescription(e.getDescription());
+		  news.setId(e.getId());
+		  news.setMagnitude(sentiment.getMagnitude());
+		  news.setScore(sentiment.getScore());
+		  news.setTitle(e.getTitle());
+		  news.setType(e.getType());
 
-	  		if (sentiment.getScore()!=0) {
-	  			String output = "{\"date\":\""+e.getDate()+"\",\"score\":\""+sentiment.getScore()+"\",\"magnitude\":\""+sentiment.getMagnitude()+"\"}";
+	      c.output(news);
+	    }
+    }
+
+    public static class ConvertJson extends DoFn<News, String> {
+    		private static final Logger log = LoggerFactory.getLogger(Convert.class);
+	    @ProcessElement
+	    public void processElement(ProcessContext c) throws IOException {
+	      News e = c.element();
+	  		if (e.getScore()!=0) {
+	  			String output = "{\"date\":\""+e.getDate()+"\",\"score\":\""+e.getScore()+"\",\"magnitude\":\""+e.getMagnitude()+"\"}";
 		    		log.info(output);
 		    		c.output(output);
 	  		}
@@ -166,11 +194,17 @@ public class StreamLoaderLocal
 	            .accumulatingFiredPanes())
 	    		.apply("ParseMsg", ParseJsons.of(News.class)).setCoder(AvroCoder.of(News.class))
 		;
-	    pNews.apply("NewsAnalysis",ParDo.of(new Analysis()))
+	    
+	    
+	    PCollection<News> pConvertedNews = pNews.apply("NewsAggregate",ParDo.of(new Convert()))
+	    		;
+	    
+	    pConvertedNews
+	    		.apply("ConvertJson", ParDo.of(new ConvertJson()))
 	    		.apply("WriteNewSubPub",PubsubIO.writeStrings().to(TO_TOPIC3))
 	    ;
-	    
-	    pNews.apply("NewsAggregate",ParDo.of(new Convert()))
+
+	    pConvertedNews.apply("ParseStats", ParDo.of(new ParseStats()))
 	    		.apply("Mean",NewsAggr.<Double>globally().withoutDefaults())
 	    		//.apply(ParDo.of(new Print()))
 	    		.apply(PubsubIO.writeStrings().to(TO_TOPIC))
