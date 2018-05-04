@@ -162,7 +162,7 @@ public class StreamLoaderLocal
 	    public void processElement(ProcessContext c) throws IOException {
 	      News e = c.element();
 	  		if (e.getScore()!=0) {
-	  			String output = "{\"date\":\""+e.getDate()+"\",\"score\":\""+e.getScore()+"\",\"magnitude\":\""+e.getMagnitude()+"\",\"title\":\""+e.getTitle().replace("\"", "")+"\"}";
+	  			String output = "{\"type\":\""+e.getType()+"\",\"date\":\""+e.getDate()+"\",\"score\":\""+e.getScore()+"\",\"magnitude\":\""+e.getMagnitude()+"\",\"title\":\""+e.getTitle().replace("\"", "")+"\"}";
 		    		log.info(output);
 		    		c.output(output);
 	  		}
