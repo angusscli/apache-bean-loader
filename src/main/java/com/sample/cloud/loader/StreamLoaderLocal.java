@@ -1,6 +1,7 @@
 package com.sample.cloud.loader;
 
 import java.io.IOException;
+import java.net.URLEncoder;
 
 import org.apache.beam.sdk.Pipeline;
 import org.apache.beam.sdk.coders.AvroCoder;
@@ -32,7 +33,7 @@ import com.google.cloud.language.v1.LanguageServiceClient;
 import com.google.cloud.language.v1.Sentiment;
 import com.sample.cloud.loader.bean.News;
 import com.sample.cloud.loader.combine.NewsAggr;
-
+import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
 public class StreamLoaderLocal 
 {
 	private static final Logger log = LoggerFactory.getLogger(StreamLoaderLocal.class);
@@ -40,7 +41,6 @@ public class StreamLoaderLocal
 	public static final String TO_TOPIC = "projects/traded-risk-project-1/topics/db-topic";
 	public static final String TO_TOPIC2 = "projects/traded-risk-project-1/topics/db2-topic";
 	public static final String TO_TOPIC3 = "projects/traded-risk-project-1/topics/db3-topic";
-	
 
 	public static class ConvertEntities extends DoFn<News,String> {
 		private static final Logger log = LoggerFactory.getLogger(ConvertEntities.class);
@@ -88,32 +88,6 @@ public class StreamLoaderLocal
 	    		c.output(output);
 	    }
 	}
-
-	/*
-    public static class Convert extends DoFn<News, Double> {
-    		private static final Logger log = LoggerFactory.getLogger(Convert.class);
-	    @ProcessElement
-	    public void processElement(ProcessContext c) throws IOException {
-	      News e = c.element();
-
-		  LanguageServiceClient language = LanguageServiceClient.create();
-
-		  String message;
-		  if (e.getDescription()!=null && !"".equals(e.getDescription())) {
-			  message = e.getTitle() + " " + e.getDescription();
-		  } else {
-			  message = e.getTitle();
-		  }
-		  
-		  Document lang = Document.newBuilder().setContent(message).setType(Type.PLAIN_TEXT).build();
-		  
-		  Sentiment sentiment = language.analyzeSentiment(lang).getDocumentSentiment();
-
-
-	      c.output(new Double(sentiment.getScore()));
-	    }
-    }
-    */
 	
     public static class ParseStats extends DoFn<News, Double> {
 		private static final Logger log = LoggerFactory.getLogger(ParseStats.class);
@@ -157,12 +131,15 @@ public class StreamLoaderLocal
     }
 
     public static class ConvertJson extends DoFn<News, String> {
-    		private static final Logger log = LoggerFactory.getLogger(Convert.class);
+    		private static final Logger log = LoggerFactory.getLogger(ConvertJson.class);
 	    @ProcessElement
 	    public void processElement(ProcessContext c) throws IOException {
 	      News e = c.element();
 	  		if (e.getScore()!=0) {
-	  			String output = "{\"type\":\""+e.getType()+"\",\"date\":\""+e.getDate()+"\",\"score\":\""+e.getScore()+"\",\"magnitude\":\""+e.getMagnitude()+"\",\"title\":\""+e.getTitle().replace("\"", "")+"\"}";
+	  			String title = e.getTitle().replace("\"", "").replace("'", "").replace("’",""); //escapeHtml4(e.getTitle());
+	  			//String title = URLEncoder.encode(e.getTitle());
+	  			String output = "{\"type\":\""+e.getType()+"\",\"date\":\""+e.getDate()+"\",\"score\":\""+e.getScore()+"\",\"magnitude\":\""+e.getMagnitude()+"\",\"title\":\""+title+"\"}";
+	  			//String output = "{\"type\":\""+e.getType()+"\",\"date\":\""+e.getDate()+"\",\"score\":\""+e.getScore()+"\",\"magnitude\":\""+e.getMagnitude()+"\"}";
 		    		log.info(output);
 		    		c.output(output);
 	  		}
