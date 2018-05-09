@@ -62,6 +62,7 @@ public class StreamLoaderPipeline
 			  } else {
 				  message = e.getTitle();
 			  }
+			  message = message.replace("\n","");
 			try (LanguageServiceClient language = LanguageServiceClient.create()) {
 			  Document doc = Document.newBuilder()
 			      .setContent(message.toLowerCase())
@@ -120,6 +121,7 @@ public class StreamLoaderPipeline
 		  } else {
 			  message = e.getTitle();
 		  }
+		  message = message.replace("\n","");
 		  
 		  Document lang = Document.newBuilder().setContent(message).setType(Type.PLAIN_TEXT).build();
 		  
