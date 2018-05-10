@@ -40,21 +40,22 @@ public class StreamLoaderPipeline
 {
 
 	private static final Logger log = LoggerFactory.getLogger(StreamLoaderPipeline.class);
-	private static final String PROJECT_ID = "traded-risk-project-1";
-	private static final String GS_TEMP = "gs://staging-testing-43541281/tmp/";
-	private static final String JOB_NAME = "demo-stream-irc-pipeline";
+	private static final String PROJECT_ID = "techfest-hackathon-1";
+	private static final String GS_TEMP = "gs://hackathon-staging-alphastock/tmp/";
+	private static final String JOB_NAME = "alphastock-stream-loader-pipeline";
 	private static final SimpleDateFormat timestampdf = new SimpleDateFormat("yyyyMMddHHmmss");
 	
-	public static final String FROM_SUBSCRIPTIONS = "projects/traded-risk-project-1/subscriptions/news-subscription";
-	public static final String TO_TOPIC = "projects/traded-risk-project-1/topics/db-topic";
-	public static final String TO_TOPIC2 = "projects/traded-risk-project-1/topics/db2-topic";
-	public static final String TO_TOPIC3 = "projects/traded-risk-project-1/topics/db3-topic";
+	public static final String FROM_SUBSCRIPTIONS = "projects/"+PROJECT_ID+"/subscriptions/news-subscription";
+	public static final String TO_TOPIC = "projects/"+PROJECT_ID+"/topics/db-topic";
+	public static final String TO_TOPIC2 = "projects/"+PROJECT_ID+"/topics/db2-topic";
+	public static final String TO_TOPIC3 = "projects/"+PROJECT_ID+"/topics/db3-topic";
 
 	public static class ConvertEntities extends DoFn<News,String> {
 		private static final Logger log = LoggerFactory.getLogger(ConvertEntities.class);
 		
 	    @ProcessElement
-	    public void processElement(ProcessContext c) throws Exception {
+	    public void processElement(ProcessContext c)  {
+	    	try {
 	        News e = c.element();
 	        String message;
 			  if (e.getDescription()!=null && !"".equals(e.getDescription())) {
@@ -83,6 +84,9 @@ public class StreamLoaderPipeline
 				  }
 			  }
 	    }
+	    	} catch (Exception e) {
+	    		
+	    	}
 	        
 	}}
 	
@@ -110,33 +114,38 @@ public class StreamLoaderPipeline
     public static class Convert extends DoFn<News, News> {
     		private static final Logger log = LoggerFactory.getLogger(Convert.class);
 	    @ProcessElement
-	    public void processElement(ProcessContext c) throws IOException {
-	      News e = c.element();
-
-		  LanguageServiceClient language = LanguageServiceClient.create();
-
-		  String message;
-		  if (e.getDescription()!=null && !"".equals(e.getDescription())) {
-			  message = e.getTitle() + " " + e.getDescription();
-		  } else {
-			  message = e.getTitle();
-		  }
-		  message = message.replace("\n","");
-		  
-		  Document lang = Document.newBuilder().setContent(message).setType(Type.PLAIN_TEXT).build();
-		  
-		  Sentiment sentiment = language.analyzeSentiment(lang).getDocumentSentiment();
-		  
-		  News news = new News();
-		  news.setDate(e.getDate());
-		  news.setDescription(e.getDescription());
-		  news.setId(e.getId());
-		  news.setMagnitude(sentiment.getMagnitude());
-		  news.setScore(sentiment.getScore());
-		  news.setTitle(e.getTitle());
-		  news.setType(e.getType());
-
-	      c.output(news);
+	    public void processElement(ProcessContext c) {
+		    	
+		    	try {
+		      News e = c.element();
+	
+			  LanguageServiceClient language = LanguageServiceClient.create();
+	
+			  String message;
+			  if (e.getDescription()!=null && !"".equals(e.getDescription())) {
+				  message = e.getTitle() + " " + e.getDescription();
+			  } else {
+				  message = e.getTitle();
+			  }
+			  message = message.replace("\n","");
+			  
+			  Document lang = Document.newBuilder().setContent(message).setType(Type.PLAIN_TEXT).build();
+			  
+			  Sentiment sentiment = language.analyzeSentiment(lang).getDocumentSentiment();
+			  
+			  News news = new News();
+			  news.setDate(e.getDate());
+			  news.setDescription(e.getDescription());
+			  news.setId(e.getId());
+			  news.setMagnitude(sentiment.getMagnitude());
+			  news.setScore(sentiment.getScore());
+			  news.setTitle(e.getTitle());
+			  news.setType(e.getType());
+	
+		      c.output(news);
+		    }
+		    	catch (Exception e) {
+		    	}
 	    }
     }
 

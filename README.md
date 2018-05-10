@@ -5,7 +5,7 @@ export GOOGLE_APPLICATION_CREDENTIALS=/Users/angus/.config/cloud-service.json
 
 
 ## Bucket
-	$ gsutil mb gs://staging-testing-43541281
+	$ gsutil mb gs://hackathon-staging-alphastock
 
 ## To Compile & Run
 `Maven build`
@@ -20,9 +20,12 @@ mvn clean install -DskipTests=true
 mvn compile exec:java \
      -Dexec.mainClass=com.sample.cloud.loader.StreamLoaderPipeline \
      -Dexec.args="--runner=DataflowRunner \
-                  --project=traded-risk-project-1 \
-                  --stagingLocation=gs://staging-testing-43541281/staging \
-                  --templateLocation=gs://staging-testing-43541281/templates/StreamLoaderTemplate"
+                  --project=techfest-hackathon-1 \
+                  --stagingLocation=gs://hackathon-staging-alphastock/staging \
+                  --templateLocation=gs://hackathon-staging-alphastock/templates/StreamLoaderTemplate"
 ```
 
+## To Run
+
+`curl https://us-central1-techfest-hackathon-1.cloudfunctions.net/dataflow-trigger`
 

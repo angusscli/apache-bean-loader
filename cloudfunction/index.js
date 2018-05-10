@@ -27,10 +27,10 @@ exports.trigger = (req, res) => {
                 auth: authClient
             });
             dataflow.projects.templates.create({
-                projectId: 'traded-risk-project-1',
+                projectId: 'techfest-hackathon-1',
                 resource: {
                     jobName: `irc-stream-pipeline-${timestamp}`,
-                    gcsPath: 'gs://staging-testing-43541281/templates/StreamLoaderTemplate'
+                    gcsPath: 'gs://hackathon-staging-alphastock/templates/StreamLoaderTemplate'
                 }
             }, function(err, response) {
                 if (err) {

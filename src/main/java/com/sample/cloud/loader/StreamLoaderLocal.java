@@ -37,10 +37,10 @@ import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
 public class StreamLoaderLocal 
 {
 	private static final Logger log = LoggerFactory.getLogger(StreamLoaderLocal.class);
-	public static final String FROM_SUBSCRIPTIONS = "projects/traded-risk-project-1/subscriptions/news-subscription";
-	public static final String TO_TOPIC = "projects/traded-risk-project-1/topics/db-topic";
-	public static final String TO_TOPIC2 = "projects/traded-risk-project-1/topics/db2-topic";
-	public static final String TO_TOPIC3 = "projects/traded-risk-project-1/topics/db3-topic";
+	public static final String FROM_SUBSCRIPTIONS = "projects/techfest-hackathon-1/subscriptions/news-subscription";
+	public static final String TO_TOPIC = "projects/techfest-hackathon-1/topics/db-topic";
+	public static final String TO_TOPIC2 = "projects/techfest-hackathon-1/topics/db2-topic";
+	public static final String TO_TOPIC3 = "projects/techfest-hackathon-1/topics/db3-topic";
 
 	public static class ConvertEntities extends DoFn<News,String> {
 		private static final Logger log = LoggerFactory.getLogger(ConvertEntities.class);

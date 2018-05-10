@@ -82,12 +82,12 @@ public class NewsAnalyticsLocal {
 
 	private interface BatchNewsOptions extends StreamingOptions {
 		@Description("Path of the file to read from")
-		@Default.String("gs://staging-testing-43541281/data/")
+		@Default.String("gs://hackathon-staging-alphastock/data/")
 		String getInputFile();
 
 		void setInputFile(String value);
 
-		@Default.String("gs://staging-testing-43541281/output/")
+		@Default.String("gs://hackathon-staging-alphastock/output/")
 		String getOutputFile();
 
 		void setOutputFile(String value);
