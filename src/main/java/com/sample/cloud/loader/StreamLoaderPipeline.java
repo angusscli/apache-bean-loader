@@ -155,7 +155,7 @@ public class StreamLoaderPipeline
 	    public void processElement(ProcessContext c) throws IOException {
 	      News e = c.element();
 	  		if (e.getScore()!=0) {
-	  			String title = e.getTitle().replace("\"", "").replace("'", "").replace("’",""); //escapeHtml4(e.getTitle());
+	  			String title = e.getTitle().replace("\"", "").replace("'", "").replace("’","").replace('\r', ' ').replace('\n', ' '); //escapeHtml4(e.getTitle());
 	  			//String title = URLEncoder.encode(e.getTitle());
 	  			String output = "{\"type\":\""+e.getType()+"\",\"date\":\""+e.getDate()+"\",\"score\":\""+e.getScore()+"\",\"magnitude\":\""+e.getMagnitude()+"\",\"title\":\""+title+"\"}";
 	  			//String output = "{\"type\":\""+e.getType()+"\",\"date\":\""+e.getDate()+"\",\"score\":\""+e.getScore()+"\",\"magnitude\":\""+e.getMagnitude()+"\"}";
